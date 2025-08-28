@@ -1,0 +1,24 @@
+package co.com.crediya.model.solicitud;
+import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+//import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+
+@Getter
+@Setter
+//@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class Solicitud {
+
+    private Long idSolicitud;
+    private BigDecimal amount;
+    private Long term;
+    private String email;
+    private Long idStatus;
+    private Long idLoanType;
+
+}
