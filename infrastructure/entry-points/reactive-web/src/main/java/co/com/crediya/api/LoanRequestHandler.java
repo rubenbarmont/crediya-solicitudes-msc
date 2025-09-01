@@ -1,0 +1,42 @@
+package co.com.crediya.api;
+
+import co.com.crediya.api.dto.LoanRequestDTO;
+import co.com.crediya.api.mapper.LoanRequestApiMapper;
+import co.com.crediya.model.exceptions.BusinessException;
+import co.com.crediya.usecase.command.createloanrequest.CreateLoanRequestUseCase;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.reactive.TransactionalOperator;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Mono;
+
+@Component
+@RequiredArgsConstructor
+public class LoanRequestHandler { // <-- Nombre correcto de la clase
+    private static final Logger log = LoggerFactory.getLogger(LoanRequestHandler.class);
+    private final CreateLoanRequestUseCase createLoanRequestUseCase;
+    private final LoanRequestApiMapper loanRequestApiMapper;
+    private final TransactionalOperator transactionalOperator;
+
+    public Mono<ServerResponse> createLoanRequest(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(LoanRequestDTO.class)
+                .map(loanRequestApiMapper::toDomain)
+                .doOnNext(req -> log.info("Iniciando solicitud de préstamo para el email: {}", req.getEmail()))
+                .flatMap(createLoanRequestUseCase::execute)
+                .as(transactionalOperator::transactional)
+                .doOnSuccess(saved -> log.info("Solicitud #{} creada exitosamente.", saved.getIdLoanRequest()))
+                .flatMap(loanRequest -> ServerResponse.status(HttpStatus.CREATED)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(loanRequest))
+                .doOnError(err -> log.error("Error al crear solicitud: {}", err.getMessage()))
+                .onErrorResume(BusinessException.class, e ->
+                        ServerResponse.badRequest().bodyValue(e.getMessage()))
+                .onErrorResume(IllegalStateException.class, e ->
+                        ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).bodyValue(e.getMessage()));
+    }
+}

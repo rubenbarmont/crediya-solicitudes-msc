@@ -1,4 +1,4 @@
-package co.com.crediya.usecase.command.usergateway;
+package co.com.crediya.usecase.gateways;
 
 import reactor.core.publisher.Mono;
 

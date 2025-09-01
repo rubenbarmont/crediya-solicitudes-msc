@@ -4,7 +4,7 @@ import co.com.crediya.model.loanrequest.gateways.LoanRequestRepository;
 import co.com.crediya.model.loantype.gateways.LoanTypeRepository;
 import co.com.crediya.model.status.gateways.StatusRepository;
 import co.com.crediya.usecase.command.createloanrequest.CreateLoanRequestUseCase;
-import co.com.crediya.usecase.command.usergateway.UserGateway;
+import co.com.crediya.usecase.gateways.UserGateway;
 import co.com.crediya.usecase.service.DefaultLoanRequestPreconditionValidator;
 import co.com.crediya.usecase.service.LoanRequestPreconditionValidator;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +25,7 @@ public class UseCasesConfig {
 
         // 2. Creamos el bean del caso de uso principal.
         @Bean
-        public CreateLoanRequestUseCase createSolicitudUseCase(
+        public CreateLoanRequestUseCase createLoanRequestUseCase(
                 // Spring inyecta el bean que creamos arriba y los adaptadores necesarios.
                 LoanRequestPreconditionValidator preconditionValidator,
                 LoanRequestRepository loanRequestRepository,

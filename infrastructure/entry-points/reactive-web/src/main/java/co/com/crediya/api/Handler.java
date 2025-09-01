@@ -1,3 +1,4 @@
+/*
 package co.com.crediya.api;
 
 import co.com.crediya.model.loanrequest.LoanRequest;
@@ -35,3 +36,4 @@ public class Handler {
                 .onErrorResume(IllegalArgumentException.class, e -> ServerResponse.badRequest().bodyValue(e.getMessage()));
     }
 }
+*/

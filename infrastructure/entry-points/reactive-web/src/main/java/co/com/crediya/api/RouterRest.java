@@ -1,3 +1,4 @@
+/*
 package co.com.crediya.api;
 
 import org.springframework.context.annotation.Bean;
@@ -18,3 +19,4 @@ public class RouterRest {
                 .and(route(GET("/api/otherusercase/path"), handler::listenGETOtherUseCase));
     }
 }
+*/

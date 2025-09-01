@@ -1,6 +1,6 @@
 package co.com.crediya.consumer;
 
-import co.com.crediya.usecase.command.usergateway.UserGateway;
+import co.com.crediya.usecase.gateways.UserGateway;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -2,7 +2,7 @@ package co.com.crediya.usecase.service;
 
 import co.com.crediya.model.loanrequest.LoanRequest;
 import co.com.crediya.model.loantype.gateways.LoanTypeRepository;
-import co.com.crediya.usecase.command.usergateway.UserGateway;
+import co.com.crediya.usecase.gateways.UserGateway;
 import co.com.crediya.model.loantype.exceptions.LoanTypeNotFoundException ;
 import co.com.crediya.model.loanrequest.exceptions.UserNotFoundException ;
 import lombok.RequiredArgsConstructor;

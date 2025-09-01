@@ -3,6 +3,7 @@ package co.com.crediya.consumer.config;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -15,31 +16,23 @@ import static io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @Configuration
+// Con esta anotación, le ordenamos a Spring que cree y configure el bean de propiedades
+@EnableConfigurationProperties(RestConsumerProperties.class)
 public class RestConsumerConfig {
 
-    private final String url;
-
-    private final int timeout;
-
-    public RestConsumerConfig(@Value("${adapter.restconsumer.url}") String url,
-                              @Value("${adapter.restconsumer.timeout}") int timeout) {
-        this.url = url;
-        this.timeout = timeout;
-    }
+    // Ya no necesitamos inyectar los valores con @Value aquí
 
     @Bean
-    public WebClient getWebClient(WebClient.Builder builder) {
+    public WebClient getWebClient(WebClient.Builder builder, RestConsumerProperties properties) {
+        // Inyectamos el objeto de propiedades directamente en el método del bean
         return builder
-            .baseUrl(url)
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-            .clientConnector(getClientHttpConnector())
-            .build();
+                .baseUrl(properties.url()) // Usamos la URL del objeto de propiedades
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .clientConnector(getClientHttpConnector(properties.timeout())) // Pasamos el timeout
+                .build();
     }
 
-    private ClientHttpConnector getClientHttpConnector() {
-        /*
-        IF YO REQUIRE APPEND SSL CERTIFICATE SELF SIGNED: this should be in the default cacerts trustore
-        */
+    private ClientHttpConnector getClientHttpConnector(int timeout) {
         return new ReactorClientHttpConnector(HttpClient.create()
                 .compress(true)
                 .keepAlive(true)
@@ -49,5 +42,4 @@ public class RestConsumerConfig {
                     connection.addHandlerLast(new WriteTimeoutHandler(timeout, MILLISECONDS));
                 }));
     }
-
 }
