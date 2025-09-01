@@ -4,5 +4,5 @@ import co.com.crediya.model.status.Status;
 import reactor.core.publisher.Mono;
 
 public interface StatusRepository {
-    Mono<Status> findById(Long id);
+    Mono<Status> findByName(String name);
 }
