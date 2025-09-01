@@ -15,16 +15,11 @@ import java.math.BigDecimal;
 @Builder
 public class LoanTypeEntity {
     @Id
-    @Column("id_tipo_prestamo")
+    @Column("id_loan_type")
     private Long idLoanType;
-    @Column("nombre")
     private String name;
-    @Column("monto_minimo")
     private BigDecimal minAmount;
-    @Column("monto_maximo")
     private BigDecimal maxAmount;
-    @Column("tasa_interes")
     private BigDecimal interestRate;
-    @Column("validacion_automatica")
     private Boolean automaticValidation;
 }

@@ -9,6 +9,8 @@ import co.com.crediya.usecase.service.DefaultLoanRequestPreconditionValidator;
 import co.com.crediya.usecase.service.LoanRequestPreconditionValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+
 @Configuration
 public class UseCasesConfig {
 

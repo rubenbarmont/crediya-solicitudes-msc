@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 
-@Table("solicitud")
+@Table("loan_request")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -15,13 +15,13 @@ import java.math.BigDecimal;
 @Builder
 public class LoanRequestEntity {
     @Id
-    @Column("id_solicitud")
-    private Long idSolicitud;
+    @Column("id_loan_request")
+    private Long idLoanRequest;
     private BigDecimal amount;
     private Long term;
     private String email;
-    @Column("id_estado")
+    @Column("id_status")
     private Long idStatus;
-    @Column("id_tipo_prestamo")
+    @Column("id_loan_type")
     private Long idLoanType;
 }

@@ -15,26 +15,22 @@ public class CreateLoanRequestUseCase {
 
     private final LoanRequestPreconditionValidator preconditionValidator;
     private final LoanRequestRepository loanRequestRepository;
-    private final StatusRepository statusRepository; // <-- El repositorio vuelve a ser una dependencia
+    private final StatusRepository statusRepository;
 
     private static final String PENDING_STATUS_NAME = "Pendiente de revisión";
 
     public Mono<LoanRequest> execute(LoanRequest loanRequest) {
         return preconditionValidator.validate(loanRequest)
-                .flatMap(this::findInitialStatusAndCombine) // Usamos el repositorio para buscar el estado
-                .flatMap(resultTuple -> {
-                    LoanRequest validRequest = resultTuple.getT1();
-                    Status initialStatus = resultTuple.getT2();
-                    validRequest.setIdStatus(initialStatus.getIdStatus()); // Asignamos el ID
-                    return loanRequestRepository.save(validRequest);
-                });
+                .flatMap(this::setInitialStatus)
+                .flatMap(loanRequestRepository::save);
     }
 
-    private Mono<Tuple2<LoanRequest, Status>> findInitialStatusAndCombine(LoanRequest loanRequest) {
-        return Mono.zip(
-                Mono.just(loanRequest),
-                statusRepository.findByName(PENDING_STATUS_NAME)
-                        .switchIfEmpty(Mono.error(new IllegalStateException("Estado inicial '" + PENDING_STATUS_NAME + "' no encontrado.")))
-        );
+    private Mono<LoanRequest> setInitialStatus(LoanRequest loanRequest) {
+        return statusRepository.findByName(PENDING_STATUS_NAME)
+                .switchIfEmpty(Mono.error(new IllegalStateException("Estado inicial '" + PENDING_STATUS_NAME + "' no encontrado.")))
+                .map(initialStatus -> {
+                    loanRequest.setIdStatus(initialStatus.getIdStatus());
+                    return loanRequest;
+                });
     }
 }

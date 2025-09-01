@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("estados")
+@Table("status")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -14,10 +14,8 @@ import org.springframework.data.relational.core.mapping.Table;
 
 public class StatusEntity {
     @Id
-    @Column("id_estado")
+    @Column("id_status")
     private Long idStatus;
-    @Column("nombre")
     private String name;
-    @Column("descripcion")
     private String description;
 }
