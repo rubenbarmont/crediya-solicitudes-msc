@@ -4,25 +4,20 @@ import io.r2dbc.pool.ConnectionPool;
 import io.r2dbc.pool.ConnectionPoolConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
-import io.r2dbc.spi.ConnectionFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
-import org.springframework.r2dbc.connection.R2dbcTransactionManager;
-import org.springframework.transaction.ReactiveTransactionManager;
+
 import java.time.Duration;
 
-@Configuration
 @EnableR2dbcRepositories(basePackages = "co.com.crediya.r2dbc.reactiverepository")
-@EnableConfigurationProperties(PostgresqlConnectionProperties.class)
+@Configuration
 public class PostgreSQLConnectionPool {
-
+    /* Change these values for your project */
     public static final int INITIAL_SIZE = 12;
     public static final int MAX_SIZE = 15;
     public static final int MAX_IDLE_TIME = 30;
-
-    // --- EL MÉTODO MANUAL QUE CREABA LAS PROPIEDADES SE HA ELIMINADO ---
+    public static final int DEFAULT_PORT = 5432;
 
     @Bean
     public ConnectionPool getConnectionConfig(PostgresqlConnectionProperties properties) {
@@ -45,10 +40,5 @@ public class PostgreSQLConnectionPool {
                 .build();
 
         return new ConnectionPool(poolConfiguration);
-    }
-
-    @Bean
-    public ReactiveTransactionManager transactionManager(ConnectionFactory connectionFactory) {
-        return new R2dbcTransactionManager(connectionFactory);
     }
 }

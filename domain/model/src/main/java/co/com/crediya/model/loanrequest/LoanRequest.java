@@ -14,9 +14,9 @@ import java.math.BigDecimal;
 @Builder(toBuilder = true)
 public class LoanRequest {
     private Long idLoanRequest;
+    private Long identityDocument; // <-- CAMPO AÑADIDO
     private BigDecimal amount;
     private Long term;
-    private String email;
     private Long idStatus;
     private Long idLoanType;
 }

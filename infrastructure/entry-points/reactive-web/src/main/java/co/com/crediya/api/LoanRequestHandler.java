@@ -2,7 +2,9 @@ package co.com.crediya.api;
 
 import co.com.crediya.api.dto.LoanRequestDTO;
 import co.com.crediya.api.mapper.LoanRequestApiMapper;
-import co.com.crediya.model.exceptions.BusinessException;
+import co.com.crediya.model.loanrequest.exceptions.InvalidLoanRequestDataException;
+import co.com.crediya.model.loanrequest.exceptions.UserNotFoundException;
+import co.com.crediya.model.loantype.exceptions.LoanTypeNotFoundException;
 import co.com.crediya.usecase.command.createloanrequest.CreateLoanRequestUseCase;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -13,11 +15,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
+
 
 @Component
 @RequiredArgsConstructor
-public class LoanRequestHandler { // <-- Nombre correcto de la clase
+public class LoanRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(LoanRequestHandler.class);
     private final CreateLoanRequestUseCase createLoanRequestUseCase;
     private final LoanRequestApiMapper loanRequestApiMapper;
@@ -26,7 +30,7 @@ public class LoanRequestHandler { // <-- Nombre correcto de la clase
     public Mono<ServerResponse> createLoanRequest(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(LoanRequestDTO.class)
                 .map(loanRequestApiMapper::toDomain)
-                .doOnNext(req -> log.info("Iniciando solicitud de préstamo para el email: {}", req.getEmail()))
+                .doOnNext(req -> log.info("Iniciando solicitud de préstamo para el documento: {}", req.getIdentityDocument()))
                 .flatMap(createLoanRequestUseCase::execute)
                 .as(transactionalOperator::transactional)
                 .doOnSuccess(saved -> log.info("Solicitud #{} creada exitosamente.", saved.getIdLoanRequest()))
@@ -34,9 +38,15 @@ public class LoanRequestHandler { // <-- Nombre correcto de la clase
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(loanRequest))
                 .doOnError(err -> log.error("Error al crear solicitud: {}", err.getMessage()))
-                .onErrorResume(BusinessException.class, e ->
-                        ServerResponse.badRequest().bodyValue(e.getMessage()))
+                .onErrorResume(ServerWebInputException.class, e ->
+                        ServerResponse.badRequest().bodyValue(e.getReason()))
+                .onErrorResume(InvalidLoanRequestDataException.class, e ->
+                        ServerResponse.badRequest().contentType(MediaType.APPLICATION_JSON).bodyValue(e.getErrors()))
+                .onErrorResume(UserNotFoundException.class, e ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST).bodyValue(e.getMessage()))
+                .onErrorResume(LoanTypeNotFoundException.class, e ->
+                        ServerResponse.status(HttpStatus.BAD_REQUEST).bodyValue(e.getMessage()))
                 .onErrorResume(IllegalStateException.class, e ->
-                        ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).bodyValue(e.getMessage()));
+                        ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).bodyValue("Error de configuración interna."));
     }
 }

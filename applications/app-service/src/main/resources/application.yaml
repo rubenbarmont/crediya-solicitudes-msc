@@ -1,12 +1,21 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
     name: "crediya-solicitudes-msc"
+
   devtools:
     add-properties: false
 
+  h2:
+    console:
+      enabled: true
+      path: "/h2"
+
+
+  profiles:
+    include: null
 management:
   endpoints:
     web:
@@ -19,32 +28,36 @@ management:
   health:
     circuitbreakers:
       enabled: true
-
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8080"
+  allowed-origins: "http://localhost:4200,http://localhost:8081"
 
-# --- BLOQUE DE CONFIGURACIÓN UNIFICADO Y CORREGIDO ---
-# Usamos 'adapter' en singular para que coincida con el @Value
 adapters:
   r2dbc:
-    # Lee las variables de entorno de docker-compose, con valores por defecto para correr localmente
-    host: "${ADAPTERS_R2DBC_HOST:localhost}"
-    port: 5433 # El puerto que exponemos en el host para la BD de solicitudes
-    database: "${ADAPTERS_R2DBC_DATABASE:crediya_solicitudes_db}"
+    host: "localhost"
+    port: 5432
+    database: "solicitud"
     schema: "public"
-    username: "${ADAPTERS_R2DBC_USERNAME:user}"
-    password: "${ADAPTERS_R2DBC_PASSWORD:password}"
+    username: "user"
+    password: "password"
+
+
+adapter:
   restconsumer:
     timeout: 5000
-    # Lee la URL del servicio de autenticación desde la variable de entorno
-    url: "${ADAPTER_RESTCONSUMER_URL:http://localhost:8081}"
-
-# --- BLOQUE DE RESILIENCE4J CORREGIDO ---
+    url: "http://localhost:8080"
 resilience4j:
   circuitbreaker:
     instances:
-      # El nombre aquí debe coincidir con el usado en la anotación @CircuitBreaker
-      autenticacionService:
+      testGet:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: "2s"
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: "10s"
+      testPost:
         registerHealthIndicator: true
         failureRateThreshold: 50
         slowCallRateThreshold: 50

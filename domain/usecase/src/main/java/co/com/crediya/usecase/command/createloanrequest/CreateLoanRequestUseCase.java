@@ -2,18 +2,15 @@ package co.com.crediya.usecase.command.createloanrequest;
 
 import co.com.crediya.model.loanrequest.LoanRequest;
 import co.com.crediya.model.loanrequest.gateways.LoanRequestRepository;
-import co.com.crediya.model.status.Status;
 import co.com.crediya.model.status.gateways.StatusRepository;
-import co.com.crediya.usecase.service.LoanRequestPreconditionValidator;
+import co.com.crediya.usecase.service.LoanRequestValidator;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-
 
 @RequiredArgsConstructor
 public class CreateLoanRequestUseCase {
 
-    private final LoanRequestPreconditionValidator preconditionValidator;
+    private final LoanRequestValidator preconditionValidator;
     private final LoanRequestRepository loanRequestRepository;
     private final StatusRepository statusRepository;
 

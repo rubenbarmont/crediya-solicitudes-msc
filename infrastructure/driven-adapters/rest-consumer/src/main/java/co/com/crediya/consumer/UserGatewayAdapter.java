@@ -3,34 +3,39 @@ package co.com.crediya.consumer;
 import co.com.crediya.usecase.gateways.UserGateway;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
 
 @Service
 @RequiredArgsConstructor
 public class UserGatewayAdapter implements UserGateway {
 
-    private final WebClient client;
+    private static final Logger log = LoggerFactory.getLogger(UserGatewayAdapter.class);
+    private final WebClient client; // Inyecta el WebClient creado por RestConsumerConfig
     private static final String AUTENTICACION_CIRCUIT_BREAKER = "autenticacionService";
 
     @Override
-    @CircuitBreaker(name = AUTENTICACION_CIRCUIT_BREAKER, fallbackMethod = "fallbackExistsByEmail")
-    public Mono<Boolean> existsByEmail(String email) {
+    @CircuitBreaker(name = AUTENTICACION_CIRCUIT_BREAKER, fallbackMethod = "fallbackExistsByIdentityDocument")
+    public Mono<Boolean> existsByIdentityDocument(Long identityDocument) {
+        log.info("Consultando existencia de documento: {} en servicio de autenticación", identityDocument);
         return client.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/usuarios/existe-por-email")
-                        .queryParam("email", email)
+                        .path("/api/v1/usuarios/existe-por-documento")
+                        .queryParam("identityDocument", identityDocument)
                         .build())
                 .retrieve()
-                .bodyToMono(Boolean.class);
+                .bodyToMono(Boolean.class)
+                .onErrorResume(e -> {
+                    log.error("Error al consultar servicio de autenticación: {}", e.getMessage());
+                    return Mono.error(e);
+                });
     }
 
-    // Método Fallback: Si el servicio de autenticación falla o está caído,
-    // este método se ejecuta. Por seguridad, asumimos que el usuario no existe.
-    public Mono<Boolean> fallbackExistsByEmail(String email, Throwable throwable) {
-        // Aquí podríamos loggear el error: log.error("Fallback para existsByEmail, email: {}, error: {}", email, throwable.getMessage());
+    public Mono<Boolean> fallbackExistsByIdentityDocument(Long identityDocument, Throwable throwable) {
+        log.warn("Fallback activado para existsByIdentityDocument. Documento: {}. Causa: {}", identityDocument, throwable.getMessage());
         return Mono.just(false);
     }
 }

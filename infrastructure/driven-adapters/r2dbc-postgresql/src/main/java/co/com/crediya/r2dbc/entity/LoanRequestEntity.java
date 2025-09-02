@@ -17,11 +17,16 @@ public class LoanRequestEntity {
     @Id
     @Column("id_loan_request")
     private Long idLoanRequest;
+
+    @Column("identity_document") // Mapeo explícito a la columna de la BD
+    private Long identityDocument;
+
     private BigDecimal amount;
     private Long term;
-    private String email;
+
     @Column("id_status")
     private Long idStatus;
+
     @Column("id_loan_type")
     private Long idLoanType;
 }

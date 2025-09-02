@@ -3,6 +3,7 @@ package co.com.crediya.api;
 import co.com.crediya.api.dto.LoanRequestDTO;
 import co.com.crediya.model.loanrequest.LoanRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -24,7 +25,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 public class LoanRequestRouter {
     @Bean
     @RouterOperation(
-            path = "/api/v1/solicitudes",
+            path = "/api/v1/solicitud",
             method = RequestMethod.POST,
             beanClass = LoanRequestHandler.class,
             beanMethod = "createLoanRequest",
@@ -33,14 +34,32 @@ public class LoanRequestRouter {
                     summary = "Registrar una nueva solicitud de préstamo",
                     tags = {"Solicitudes de Préstamo"},
                     requestBody = @RequestBody(required = true, content = @Content(schema = @Schema(implementation = LoanRequestDTO.class))),
+                    // --- SECCIÓN DE RESPUESTAS MEJORADA Y DETALLADA ---
                     responses = {
-                            @ApiResponse(responseCode = "201", description = "Solicitud creada exitosamente.", content = @Content(schema = @Schema(implementation = LoanRequest.class))),
-                            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos o precondición no cumplida (ej. usuario no existe)."),
-                            @ApiResponse(responseCode = "500", description = "Error interno del servidor (ej. estado inicial no configurado).")
+                            @ApiResponse(
+                                    responseCode = "201",
+                                    description = "Solicitud creada exitosamente.",
+                                    content = @Content(schema = @Schema(implementation = LoanRequest.class))
+                            ),
+                            @ApiResponse(
+                                    responseCode = "400",
+                                    description = "Datos de entrada inválidos. Ocurre cuando faltan campos o tienen un formato incorrecto.",
+                                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = String.class)))
+                            ),
+                            @ApiResponse(
+                                    responseCode = "400",
+                                    description = "Regla de negocio no cumplida. Ocurre cuando el usuario o el tipo de préstamo no existen.",
+                                    content = @Content(schema = @Schema(implementation = String.class))
+                            ),
+                            @ApiResponse(
+                                    responseCode = "500",
+                                    description = "Error interno del servidor. Generalmente causado por una configuración faltante, como el estado inicial no encontrado en la base de datos.",
+                                    content = @Content(schema = @Schema(implementation = String.class))
+                            )
                     }
             )
     )
     public RouterFunction<ServerResponse> loanRequestRouterFunction(LoanRequestHandler handler) {
-        return route(POST("/api/v1/solicitudes").and(accept(MediaType.APPLICATION_JSON)), handler::createLoanRequest);
+        return route(POST("/api/v1/solicitud").and(accept(MediaType.APPLICATION_JSON)), handler::createLoanRequest);
     }
 }
