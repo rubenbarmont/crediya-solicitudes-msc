@@ -1,8 +1,8 @@
 package co.com.crediya.usecase.service;
 
-import co.com.crediya.model.loanrequest.LoanRequest;
-import co.com.crediya.model.loanrequest.exceptions.InvalidLoanRequestDataException;
-import co.com.crediya.model.loanrequest.exceptions.UserNotFoundException;
+import co.com.crediya.model.loan.Loan;
+import co.com.crediya.model.loan.exceptions.InvalidLoanRequestDataException;
+import co.com.crediya.model.loan.exceptions.UserNotFoundException;
 import co.com.crediya.model.loantype.exceptions.LoanTypeNotFoundException;
 import co.com.crediya.model.loantype.gateways.LoanTypeRepository;
 import co.com.crediya.usecase.gateways.UserGateway;
@@ -14,37 +14,37 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static co.com.crediya.usecase.service.LoanRequestConstants.*;
+import static co.com.crediya.usecase.service.LoanConstants.*;
 
-public class StandardLoanRequestValidator implements LoanRequestValidator {
+public class StandardLoanValidator implements LoanValidator {
 
     private final LoanTypeRepository loanTypeRepository;
     private final UserGateway userGateway;
 
     // Constructor explícito para mantener la clase como un POJO puro
-    public StandardLoanRequestValidator(LoanTypeRepository loanTypeRepository, UserGateway userGateway) {
+    public StandardLoanValidator(LoanTypeRepository loanTypeRepository, UserGateway userGateway) {
         this.loanTypeRepository = loanTypeRepository;
         this.userGateway = userGateway;
     }
 
     @Override
-    public Mono<LoanRequest> validate(LoanRequest loanRequest) {
+    public Mono<Loan> validate(Loan loan) {
         // Fase 1: Validación de formato de datos (síncrona y funcional)
-        return validateDataFormat(loanRequest)
+        return validateDataFormat(loan)
                 // Fase 2: Si la Fase 1 es exitosa, procede con la validación de negocio (asíncrona)
-                .then(validateBusinessRules(loanRequest));
+                .flatMap(this::validateBusinessRules);
     }
 
     /**
      * Valida el formato y la estructura de los datos de entrada de forma funcional.
      * Acumula todos los errores y falla si encuentra al menos uno.
      */
-    private Mono<LoanRequest> validateDataFormat(LoanRequest loanRequest) {
+    private Mono<Loan> validateDataFormat(Loan loan) {
         List<String> errors = Stream.of(
-                        validateRequiredField(loanRequest.getIdentityDocument(), FIELD_IDENTITY_DOCUMENT),
-                        validateAmount(loanRequest.getAmount()),
-                        validateTerm(loanRequest.getTerm()),
-                        validateRequiredField(loanRequest.getIdLoanType(), FIELD_LOAN_TYPE_ID)
+                        validateRequiredField(loan.getIdentityDocument(), FIELD_IDENTITY_DOCUMENT),
+                        validateAmount(loan.getAmount()),
+                        validateTerm(loan.getTerm()),
+                        validateRequiredField(loan.getIdLoanType(), FIELD_LOAN_TYPE_ID)
                 )
                 .flatMap(Optional::stream)
                 .toList();
@@ -52,25 +52,25 @@ public class StandardLoanRequestValidator implements LoanRequestValidator {
         if (!errors.isEmpty()) {
             return Mono.error(new InvalidLoanRequestDataException(errors));
         }
-        return Mono.just(loanRequest);
+        return Mono.just(loan);
     }
 
     /**
      * Valida las reglas de negocio que requieren consultas externas de forma reactiva y en paralelo.
      */
-    private Mono<LoanRequest> validateBusinessRules(LoanRequest loanRequest) {
-        if (loanRequest.getIdLoanType() == null || loanRequest.getIdentityDocument() == null) {
+    private Mono<Loan> validateBusinessRules(Loan loan) {
+        if (loan.getIdLoanType() == null || loan.getIdentityDocument() == null) {
             return Mono.error(new IllegalStateException("Los datos llegaron incompletos a la validación de negocio."));
         }
 
         return Mono.zip(
-                        loanTypeRepository.findById(loanRequest.getIdLoanType())
+                        loanTypeRepository.findById(loan.getIdLoanType())
                                 .switchIfEmpty(Mono.error(new LoanTypeNotFoundException("El tipo de préstamo seleccionado no existe."))),
-                        userGateway.existsByIdentityDocument(loanRequest.getIdentityDocument())
+                        userGateway.existsByIdentityDocument(loan.getIdentityDocument())
                 )
                 .filter(validationResult -> validationResult.getT2())
                 .switchIfEmpty(Mono.error(new UserNotFoundException("El usuario con el documento proporcionado no está registrado.")))
-                .thenReturn(loanRequest);
+                .thenReturn(loan);
     }
 
     // --- Métodos de Ayuda para Validación de Formato ---

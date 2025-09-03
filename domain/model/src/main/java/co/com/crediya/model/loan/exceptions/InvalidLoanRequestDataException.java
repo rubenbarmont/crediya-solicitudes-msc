@@ -1,4 +1,4 @@
-package co.com.crediya.model.loanrequest.exceptions;
+package co.com.crediya.model.loan.exceptions;
 
 import co.com.crediya.model.exceptions.BusinessException;
 

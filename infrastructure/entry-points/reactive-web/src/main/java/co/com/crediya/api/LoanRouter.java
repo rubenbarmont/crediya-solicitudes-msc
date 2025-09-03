@@ -1,7 +1,7 @@
 package co.com.crediya.api;
 
 import co.com.crediya.api.dto.LoanRequestDTO;
-import co.com.crediya.model.loanrequest.LoanRequest;
+import co.com.crediya.model.loan.Loan;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,12 +22,12 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 
 
 @Configuration
-public class LoanRequestRouter {
+public class LoanRouter {
     @Bean
     @RouterOperation(
             path = "/api/v1/solicitud",
             method = RequestMethod.POST,
-            beanClass = LoanRequestHandler.class,
+            beanClass = LoanHandler.class,
             beanMethod = "createLoanRequest",
             operation = @Operation(
                     operationId = "createLoanRequest",
@@ -39,7 +39,7 @@ public class LoanRequestRouter {
                             @ApiResponse(
                                     responseCode = "201",
                                     description = "Solicitud creada exitosamente.",
-                                    content = @Content(schema = @Schema(implementation = LoanRequest.class))
+                                    content = @Content(schema = @Schema(implementation = Loan.class))
                             ),
                             @ApiResponse(
                                     responseCode = "400",
@@ -59,7 +59,7 @@ public class LoanRequestRouter {
                     }
             )
     )
-    public RouterFunction<ServerResponse> loanRequestRouterFunction(LoanRequestHandler handler) {
+    public RouterFunction<ServerResponse> loanRequestRouterFunction(LoanHandler handler) {
         return route(POST("/api/v1/solicitud").and(accept(MediaType.APPLICATION_JSON)), handler::createLoanRequest);
     }
 }

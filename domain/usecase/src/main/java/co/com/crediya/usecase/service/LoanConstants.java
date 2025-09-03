@@ -1,8 +1,8 @@
 package co.com.crediya.usecase.service;
 
-public final class LoanRequestConstants {
+public final class LoanConstants {
 
-    private LoanRequestConstants() {
+    private LoanConstants() {
         throw new IllegalStateException("Utility class");
     }
 

@@ -1,11 +1,11 @@
 package co.com.crediya.api;
 
 import co.com.crediya.api.dto.LoanRequestDTO;
-import co.com.crediya.api.mapper.LoanRequestApiMapper;
-import co.com.crediya.model.loanrequest.exceptions.InvalidLoanRequestDataException;
-import co.com.crediya.model.loanrequest.exceptions.UserNotFoundException;
+import co.com.crediya.api.mapper.LoanApiMapper;
+import co.com.crediya.model.loan.exceptions.InvalidLoanRequestDataException;
+import co.com.crediya.model.loan.exceptions.UserNotFoundException;
 import co.com.crediya.model.loantype.exceptions.LoanTypeNotFoundException;
-import co.com.crediya.usecase.command.createloanrequest.CreateLoanRequestUseCase;
+import co.com.crediya.usecase.command.createloan.CreateLoanUseCase;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,19 +21,19 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class LoanRequestHandler {
-    private static final Logger log = LoggerFactory.getLogger(LoanRequestHandler.class);
-    private final CreateLoanRequestUseCase createLoanRequestUseCase;
-    private final LoanRequestApiMapper loanRequestApiMapper;
+public class LoanHandler {
+    private static final Logger log = LoggerFactory.getLogger(LoanHandler.class);
+    private final CreateLoanUseCase createLoanUseCase;
+    private final LoanApiMapper loanApiMapper;
     private final TransactionalOperator transactionalOperator;
 
     public Mono<ServerResponse> createLoanRequest(ServerRequest serverRequest) {
         return serverRequest.bodyToMono(LoanRequestDTO.class)
-                .map(loanRequestApiMapper::toDomain)
+                .map(loanApiMapper::toDomain)
                 .doOnNext(req -> log.info("Iniciando solicitud de préstamo para el documento: {}", req.getIdentityDocument()))
-                .flatMap(createLoanRequestUseCase::execute)
+                .flatMap(createLoanUseCase::execute)
                 .as(transactionalOperator::transactional)
-                .doOnSuccess(saved -> log.info("Solicitud #{} creada exitosamente.", saved.getIdLoanRequest()))
+                .doOnSuccess(saved -> log.info("Solicitud #{} creada exitosamente.", saved.getIdLoan()))
                 .flatMap(loanRequest -> ServerResponse.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(loanRequest))

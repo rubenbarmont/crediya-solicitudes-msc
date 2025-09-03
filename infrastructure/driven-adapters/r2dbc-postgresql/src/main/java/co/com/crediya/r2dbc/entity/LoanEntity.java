@@ -7,16 +7,16 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 
-@Table("loan_request")
+@Table("loans")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
-public class LoanRequestEntity {
+public class LoanEntity {
     @Id
-    @Column("id_loan_request")
-    private Long idLoanRequest;
+    @Column("id_loan")
+    private Long idLoan;
 
     @Column("identity_document") // Mapeo explícito a la columna de la BD
     private Long identityDocument;

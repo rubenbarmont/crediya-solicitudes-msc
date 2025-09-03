@@ -1,4 +1,4 @@
-package co.com.crediya.model.loanrequest.exceptions;
+package co.com.crediya.model.loan.exceptions;
 
 public class UserNotFoundException extends RuntimeException {
     public UserNotFoundException(String message) {
