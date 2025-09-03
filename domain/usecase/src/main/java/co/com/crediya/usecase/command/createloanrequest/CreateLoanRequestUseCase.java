@@ -10,14 +10,14 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class CreateLoanRequestUseCase {
 
-    private final LoanRequestValidator preconditionValidator;
+    private final LoanRequestValidator validator;
     private final LoanRequestRepository loanRequestRepository;
     private final StatusRepository statusRepository;
 
     private static final String PENDING_STATUS_NAME = "Pendiente de revisión";
 
     public Mono<LoanRequest> execute(LoanRequest loanRequest) {
-        return preconditionValidator.validate(loanRequest)
+        return validator.validate(loanRequest)
                 .flatMap(this::setInitialStatus)
                 .flatMap(loanRequestRepository::save);
     }

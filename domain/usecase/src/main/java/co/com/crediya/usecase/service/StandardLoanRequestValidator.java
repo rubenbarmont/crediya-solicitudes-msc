@@ -59,12 +59,16 @@ public class StandardLoanRequestValidator implements LoanRequestValidator {
      * Valida las reglas de negocio que requieren consultas externas de forma reactiva y en paralelo.
      */
     private Mono<LoanRequest> validateBusinessRules(LoanRequest loanRequest) {
+        if (loanRequest.getIdLoanType() == null || loanRequest.getIdentityDocument() == null) {
+            return Mono.error(new IllegalStateException("Los datos llegaron incompletos a la validación de negocio."));
+        }
+
         return Mono.zip(
                         loanTypeRepository.findById(loanRequest.getIdLoanType())
                                 .switchIfEmpty(Mono.error(new LoanTypeNotFoundException("El tipo de préstamo seleccionado no existe."))),
                         userGateway.existsByIdentityDocument(loanRequest.getIdentityDocument())
                 )
-                .filter(validationResult -> validationResult.getT2()) // Filtra si el usuario existe (T2 es true)
+                .filter(validationResult -> validationResult.getT2())
                 .switchIfEmpty(Mono.error(new UserNotFoundException("El usuario con el documento proporcionado no está registrado.")))
                 .thenReturn(loanRequest);
     }

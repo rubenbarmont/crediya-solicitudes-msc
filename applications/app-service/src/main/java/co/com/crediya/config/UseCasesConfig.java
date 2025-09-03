@@ -1,14 +1,30 @@
 package co.com.crediya.config;
 
-import org.springframework.context.annotation.ComponentScan;
+import co.com.crediya.model.loanrequest.gateways.LoanRequestRepository;
+import co.com.crediya.model.loantype.gateways.LoanTypeRepository;
+import co.com.crediya.model.status.gateways.StatusRepository;
+import co.com.crediya.usecase.command.createloanrequest.CreateLoanRequestUseCase;
+import co.com.crediya.usecase.gateways.UserGateway;
+import co.com.crediya.usecase.service.LoanRequestValidator;
+import co.com.crediya.usecase.service.StandardLoanRequestValidator;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
 
 @Configuration
-@ComponentScan(basePackages = "co.com.crediya.usecase.command",
-        includeFilters = {
-                @ComponentScan.Filter(type = FilterType.REGEX, pattern = "^.+UseCase$")
-        },
-        useDefaultFilters = false)
 public class UseCasesConfig {
+
+        @Bean
+        public LoanRequestValidator loanRequestValidator(
+                LoanTypeRepository loanTypeRepository,
+                UserGateway userGateway) {
+                return new StandardLoanRequestValidator(loanTypeRepository, userGateway);
+        }
+
+        @Bean
+        public CreateLoanRequestUseCase createLoanRequestUseCase(
+                LoanRequestValidator validator,
+                LoanRequestRepository loanRequestRepository,
+                StatusRepository statusRepository) {
+                return new CreateLoanRequestUseCase(validator, loanRequestRepository, statusRepository);
+        }
 }

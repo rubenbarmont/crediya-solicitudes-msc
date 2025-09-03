@@ -1,3 +1,4 @@
+/*
 package co.com.crediya.config;
 
 
@@ -20,3 +21,4 @@ public class ValidatorsConfig {
         return new StandardLoanRequestValidator(loanTypeRepository, userGateway);
     }
 }
+*/
