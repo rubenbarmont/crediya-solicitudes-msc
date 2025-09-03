@@ -23,7 +23,7 @@ public class UserGatewayAdapter implements UserGateway {
         log.info("Consultando existencia de documento: {} en servicio de autenticación", identityDocument);
         return client.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/usuarios/existe-por-documento")
+                        .path("/api/v1/usuarios")
                         .queryParam("identityDocument", identityDocument)
                         .build())
                 .retrieve()
