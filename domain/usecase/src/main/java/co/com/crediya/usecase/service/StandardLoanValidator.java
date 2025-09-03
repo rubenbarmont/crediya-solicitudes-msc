@@ -21,7 +21,6 @@ public class StandardLoanValidator implements LoanValidator {
     private final LoanTypeRepository loanTypeRepository;
     private final UserGateway userGateway;
 
-    // Constructor explícito para mantener la clase como un POJO puro
     public StandardLoanValidator(LoanTypeRepository loanTypeRepository, UserGateway userGateway) {
         this.loanTypeRepository = loanTypeRepository;
         this.userGateway = userGateway;
@@ -29,9 +28,7 @@ public class StandardLoanValidator implements LoanValidator {
 
     @Override
     public Mono<Loan> validate(Loan loan) {
-        // Fase 1: Validación de formato de datos (síncrona y funcional)
         return validateDataFormat(loan)
-                // Fase 2: Si la Fase 1 es exitosa, procede con la validación de negocio (asíncrona)
                 .flatMap(this::validateBusinessRules);
     }
 
@@ -72,8 +69,6 @@ public class StandardLoanValidator implements LoanValidator {
                 .switchIfEmpty(Mono.error(new UserNotFoundException("El usuario con el documento proporcionado no está registrado.")))
                 .thenReturn(loan);
     }
-
-    // --- Métodos de Ayuda para Validación de Formato ---
 
     private Optional<String> validateRequiredField(Long value, String fieldName) {
         return Objects.isNull(value)

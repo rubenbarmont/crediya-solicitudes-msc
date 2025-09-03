@@ -15,5 +15,4 @@ public class LoanReactiveRepositoryAdapter
     public LoanReactiveRepositoryAdapter(LoanReactiveRepository repository, ObjectMapper mapper) {
         super(repository, mapper, d -> mapper.mapBuilder(d, Loan.LoanBuilder.class).build());
     }
-    // El método save() es heredado de la clase base ReactiveAdapterOperations
 }
