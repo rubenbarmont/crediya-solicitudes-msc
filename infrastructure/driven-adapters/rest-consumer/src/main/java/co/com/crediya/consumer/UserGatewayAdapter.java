@@ -1,5 +1,7 @@
 package co.com.crediya.consumer;
 
+import co.com.crediya.consumer.dto.UserResponseDTO;
+import co.com.crediya.model.user.User;
 import co.com.crediya.usecase.gateways.UserGateway;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
@@ -18,24 +20,27 @@ public class UserGatewayAdapter implements UserGateway {
     private static final String AUTENTICACION_CIRCUIT_BREAKER = "autenticacionService";
 
     @Override
-    @CircuitBreaker(name = AUTENTICACION_CIRCUIT_BREAKER, fallbackMethod = "fallbackExistsByIdentityDocument")
-    public Mono<Boolean> existsByIdentityDocument(Long identityDocument) {
-        log.info("Consultando existencia de documento: {} en servicio de autenticación", identityDocument);
+    @CircuitBreaker(name = AUTENTICACION_CIRCUIT_BREAKER, fallbackMethod = "fallbackFindUser")
+    public Mono<User> findByIdentityDocument(Long identityDocument) {
+        log.info("Consultando datos del usuario con documento: {} en servicio de autenticación", identityDocument);
         return client.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v1/usuarios")
-                        .queryParam("identityDocument", identityDocument)
-                        .build())
+                .uri("/api/v1/usuarios/by-identity-document/{identityDocument}", identityDocument) // <-- NUEVA RUTA
                 .retrieve()
-                .bodyToMono(Boolean.class)
+                .bodyToMono(UserResponseDTO.class) // <-- Mapear a nuestro DTO de respuesta
+                .map(dto -> User.builder() // <-- Mapear DTO a nuestro modelo de dominio
+                        .identityDocument(dto.getIdentityDocument())
+                        .email(dto.getEmail())
+                        .baseSalary(dto.getBaseSalary())
+                        .build())
                 .onErrorResume(e -> {
-                    log.error("Error al consultar servicio de autenticación: {}", e.getMessage());
+                    log.error("Error al consultar servicio de autenticación para documento {}: {}", identityDocument, e.getMessage());
                     return Mono.error(e);
                 });
     }
 
-    public Mono<Boolean> fallbackExistsByIdentityDocument(Long identityDocument, Throwable throwable) {
-        log.warn("Fallback activado para existsByIdentityDocument. Documento: {}. Causa: {}", identityDocument, throwable.getMessage());
-        return Mono.just(false);
+    // El fallback ahora devuelve un Mono vacío para indicar que no se pudo obtener la información.
+    public Mono<User> fallbackFindUser(Long identityDocument, Throwable throwable) {
+        log.warn("Fallback activado para findByIdentityDocument. Documento: {}. Causa: {}", identityDocument, throwable.getMessage());
+        return Mono.empty(); // <-- Devolver un Mono vacío es mejor que un error aquí.
     }
 }

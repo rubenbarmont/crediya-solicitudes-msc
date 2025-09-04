@@ -17,6 +17,7 @@ public class Loan {
     private Long identityDocument; // <-- CAMPO AÑADIDO
     private BigDecimal amount;
     private Long term;
+    private String email;
     private Long idStatus;
     private Long idLoanType;
 }

@@ -15,16 +15,16 @@ public class UseCasesConfig {
 
         @Bean
         public LoanValidator loanValidator(
-                LoanTypeRepository loanTypeRepository,
-                UserGateway userGateway) {
-                return new StandardLoanValidator(loanTypeRepository, userGateway);
+                LoanTypeRepository loanTypeRepository) { // <-- 1. Se elimina UserGateway de aquí
+                return new StandardLoanValidator(loanTypeRepository); // <-- 2. Y se quita de la creación
         }
 
         @Bean
-        public CreateLoanUseCase createLoanRequestUseCase(
-                LoanValidator validator,
-                LoanRepository loanRepository,
-                StatusRepository statusRepository) {
-                return new CreateLoanUseCase(validator, loanRepository, statusRepository);
+        public CreateLoanUseCase createLoanUseCase( // <-- 3. Renombrado para ser consistente
+                                                    LoanValidator validator,
+                                                    LoanRepository loanRepository,
+                                                    StatusRepository statusRepository,
+                                                    UserGateway userGateway) { // <-- 4. Se añade UserGateway aquí
+                return new CreateLoanUseCase(validator, loanRepository, statusRepository, userGateway); // <-- 5. Y se pasa al constructor
         }
 }

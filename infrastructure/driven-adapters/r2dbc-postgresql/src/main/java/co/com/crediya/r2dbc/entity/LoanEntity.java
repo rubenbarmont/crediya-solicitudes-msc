@@ -23,6 +23,7 @@ public class LoanEntity {
 
     private BigDecimal amount;
     private Long term;
+    private String email;
 
     @Column("id_status")
     private Long idStatus;

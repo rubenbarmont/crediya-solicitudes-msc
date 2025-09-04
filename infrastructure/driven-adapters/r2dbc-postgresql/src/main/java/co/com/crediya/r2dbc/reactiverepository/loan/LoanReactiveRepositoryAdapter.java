@@ -13,6 +13,6 @@ public class LoanReactiveRepositoryAdapter
         implements LoanRepository {
 
     public LoanReactiveRepositoryAdapter(LoanReactiveRepository repository, ObjectMapper mapper) {
-        super(repository, mapper, d -> mapper.mapBuilder(d, Loan.LoanBuilder.class).build());
+        super(repository, mapper, entity -> mapper.mapBuilder(entity, Loan.LoanBuilder.class).build());
     }
 }

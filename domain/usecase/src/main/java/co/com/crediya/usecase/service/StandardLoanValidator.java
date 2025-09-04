@@ -19,11 +19,11 @@ import static co.com.crediya.usecase.service.LoanConstants.*;
 public class StandardLoanValidator implements LoanValidator {
 
     private final LoanTypeRepository loanTypeRepository;
-    private final UserGateway userGateway;
 
-    public StandardLoanValidator(LoanTypeRepository loanTypeRepository, UserGateway userGateway) {
+    // --- CONSTRUCTOR MODIFICADO ---
+    public StandardLoanValidator(LoanTypeRepository loanTypeRepository) {
         this.loanTypeRepository = loanTypeRepository;
-        this.userGateway = userGateway;
+        // this.userGateway = userGateway; // <-- ELIMINAR ESTA LÍNEA
     }
 
     @Override
@@ -55,18 +55,21 @@ public class StandardLoanValidator implements LoanValidator {
     /**
      * Valida las reglas de negocio que requieren consultas externas de forma reactiva y en paralelo.
      */
+    /**
+     * Valida las reglas de negocio. Ahora solo valida la existencia del LoanType.
+     */
     private Mono<Loan> validateBusinessRules(Loan loan) {
-        if (loan.getIdLoanType() == null || loan.getIdentityDocument() == null) {
-            return Mono.error(new IllegalStateException("Los datos llegaron incompletos a la validación de negocio."));
+        if (loan.getIdLoanType() == null) {
+            return Mono.error(new IllegalStateException("El id de tipo de préstamo es nulo."));
         }
 
-        return Mono.zip(
-                        loanTypeRepository.findById(loan.getIdLoanType())
-                                .switchIfEmpty(Mono.error(new LoanTypeNotFoundException("El tipo de préstamo seleccionado no existe."))),
-                        userGateway.existsByIdentityDocument(loan.getIdentityDocument())
-                )
-                .filter(validationResult -> validationResult.getT2())
-                .switchIfEmpty(Mono.error(new UserNotFoundException("El usuario con el documento proporcionado no está registrado.")))
+        // La validación del usuario ya no se hace aquí.
+        // Solo validamos que el tipo de préstamo exista.
+        return loanTypeRepository.findById(loan.getIdLoanType())
+                .switchIfEmpty(Mono.error(new LoanTypeNotFoundException("El tipo de préstamo seleccionado no existe.")))
+                // Podríamos agregar más validaciones aquí, por ejemplo, que el monto esté dentro de los límites del tipo de préstamo.
+                // .filter(loanType -> isAmountValidForLoanType(loan.getAmount(), loanType))
+                // .switchIfEmpty(...)
                 .thenReturn(loan);
     }
 
