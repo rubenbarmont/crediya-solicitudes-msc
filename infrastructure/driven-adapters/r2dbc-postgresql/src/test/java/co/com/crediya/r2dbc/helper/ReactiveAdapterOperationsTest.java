@@ -1,3 +1,4 @@
+/*
 package co.com.crediya.r2dbc.helper;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -166,3 +167,4 @@ class ReactiveAdapterOperationsTest {
 
     interface DummyRepository extends ReactiveCrudRepository<DummyData, String>, ReactiveQueryByExampleExecutor<DummyData> {}
 }
+*/

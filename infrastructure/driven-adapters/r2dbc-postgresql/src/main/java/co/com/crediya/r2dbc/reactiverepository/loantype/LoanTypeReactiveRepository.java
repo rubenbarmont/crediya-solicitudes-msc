@@ -1,0 +1,9 @@
+package co.com.crediya.r2dbc.reactiverepository.loantype;
+
+import co.com.crediya.r2dbc.entity.LoanTypeEntity;
+import org.springframework.data.repository.query.ReactiveQueryByExampleExecutor;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+
+public interface LoanTypeReactiveRepository extends ReactiveCrudRepository<LoanTypeEntity, Long>, ReactiveQueryByExampleExecutor<LoanTypeEntity> {
+    // Spring Data nos da el método findById() automáticamente
+}

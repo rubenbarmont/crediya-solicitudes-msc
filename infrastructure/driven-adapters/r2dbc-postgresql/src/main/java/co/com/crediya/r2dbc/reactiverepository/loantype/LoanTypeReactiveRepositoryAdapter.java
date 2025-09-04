@@ -1,0 +1,20 @@
+package co.com.crediya.r2dbc.reactiverepository.loantype;
+
+import co.com.crediya.model.loantype.LoanType;
+import co.com.crediya.model.loantype.gateways.LoanTypeRepository;
+import co.com.crediya.r2dbc.entity.LoanTypeEntity;
+import co.com.crediya.r2dbc.helper.ReactiveAdapterOperations;
+import org.reactivecommons.utils.ObjectMapper;
+import org.springframework.stereotype.Repository;
+
+
+@Repository
+public class LoanTypeReactiveRepositoryAdapter
+        extends ReactiveAdapterOperations<LoanType, LoanTypeEntity, Long, LoanTypeReactiveRepository>
+        implements LoanTypeRepository {
+
+    public LoanTypeReactiveRepositoryAdapter(LoanTypeReactiveRepository repository, ObjectMapper mapper) {
+        super(repository, mapper, entity -> mapper.mapBuilder(entity, LoanType.LoanTypeBuilder.class).build());
+    }
+    // El método findById() es heredado de la clase base ReactiveAdapterOperations
+}

@@ -6,9 +6,11 @@ import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
 import java.time.Duration;
 
+@EnableR2dbcRepositories(basePackages = "co.com.crediya.r2dbc.reactiverepository")
 @Configuration
 public class PostgreSQLConnectionPool {
     /* Change these values for your project */
@@ -17,9 +19,9 @@ public class PostgreSQLConnectionPool {
     public static final int MAX_IDLE_TIME = 30;
     public static final int DEFAULT_PORT = 5432;
 
-	@Bean
-	public ConnectionPool getConnectionConfig(PostgresqlConnectionProperties properties) {
-		PostgresqlConnectionConfiguration dbConfiguration = PostgresqlConnectionConfiguration.builder()
+    @Bean
+    public ConnectionPool getConnectionConfig(PostgresqlConnectionProperties properties) {
+        PostgresqlConnectionConfiguration dbConfiguration = PostgresqlConnectionConfiguration.builder()
                 .host(properties.host())
                 .port(properties.port())
                 .database(properties.database())
@@ -37,6 +39,6 @@ public class PostgreSQLConnectionPool {
                 .validationQuery("SELECT 1")
                 .build();
 
-		return new ConnectionPool(poolConfiguration);
-	}
+        return new ConnectionPool(poolConfiguration);
+    }
 }
