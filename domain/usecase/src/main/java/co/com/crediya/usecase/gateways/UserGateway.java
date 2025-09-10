@@ -6,5 +6,8 @@ import reactor.core.publisher.Mono;
 public interface UserGateway {
     // Mono<Boolean> existsByIdentityDocument(Long identityDocument);
 
-    Mono<User> findByIdentityDocument(Long identityDocument); // <-- NUEVO MÉTODO
+    // Mono<User> findByIdentityDocument(Long identityDocument);
+
+    // --- NUEVO MÉTODO MÁS SEGURO ---
+    Mono<User> findById(Long userId);// <-- NUEVO MÉTODO
 }

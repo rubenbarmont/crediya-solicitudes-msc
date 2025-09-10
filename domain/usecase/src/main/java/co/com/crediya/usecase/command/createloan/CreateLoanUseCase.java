@@ -8,6 +8,8 @@ import co.com.crediya.usecase.gateways.UserGateway;
 import co.com.crediya.usecase.service.LoanValidator;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
+import co.com.crediya.model.loan.exceptions.LoanCreationForbiddenException;
+
 
 @RequiredArgsConstructor
 public class CreateLoanUseCase {
@@ -19,12 +21,17 @@ public class CreateLoanUseCase {
 
     private static final String PENDING_STATUS_NAME = "Pendiente de revisión";
 
-    public Mono<Loan> execute(Loan loan) {
-        return userGateway.findByIdentityDocument(loan.getIdentityDocument())
-                .switchIfEmpty(Mono.error(new UserNotFoundException(loan.getIdentityDocument())))
-                .flatMap(user -> {
-                    // Enrich the loan object with the user's email
-                    loan.setEmail(user.getEmail());
+    public Mono<Loan> execute(Loan loan, Long authenticatedUserId) {
+        return userGateway.findById(authenticatedUserId)
+                .switchIfEmpty(Mono.error(new UserNotFoundException("El usuario autenticado no fue encontrado en el sistema.")))
+                .flatMap(authenticatedUser -> {
+                    // VALIDACIÓN CLAVE: Compara el documento del token con el de la petición
+                    if (!authenticatedUser.getIdentityDocument().equals(loan.getIdentityDocument())) {
+                        return Mono.error(new LoanCreationForbiddenException());
+                    }
+
+                    // Si la validación pasa, enriquecemos el préstamo con el email verificado
+                    loan.setEmail(authenticatedUser.getEmail());
                     return Mono.just(loan);
                 })
                 .flatMap(validator::validate)
