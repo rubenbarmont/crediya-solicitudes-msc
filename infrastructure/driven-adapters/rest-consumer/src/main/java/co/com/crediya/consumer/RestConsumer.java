@@ -8,27 +8,18 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-public class RestConsumer /* implements Gateway from domain */{
+public class RestConsumer {
     private final WebClient client;
 
 
-    // these methods are an example that illustrates the implementation of WebClient.
-    // You should use the methods that you implement from the Gateway from the domain.
-    @CircuitBreaker(name = "testGet" /*, fallbackMethod = "testGetOk"*/)
+
+    @CircuitBreaker(name = "testGet")
     public Mono<ObjectResponse> testGet() {
         return client
                 .get()
                 .retrieve()
                 .bodyToMono(ObjectResponse.class);
     }
-
-// Possible fallback method
-//    public Mono<String> testGetOk(Exception ignored) {
-//        return client
-//                .get() // TODO: change for another endpoint or destination
-//                .retrieve()
-//                .bodyToMono(String.class);
-//    }
 
     @CircuitBreaker(name = "testPost")
     public Mono<ObjectResponse> testPost() {

@@ -29,7 +29,6 @@ public class UserGatewayAdapter implements UserGateway {
                 .map(ctx -> ctx.getAuthentication().getPrincipal())
                 .flatMap(principal -> {
                     if (principal instanceof Jwt jwt) {
-                        // Con la dependencia correcta, este método ahora sí se encontrará
                         return Mono.just(jwt.getTokenValue());
                     }
                     return Mono.error(new IllegalStateException("El principal no es un token JWT válido"));

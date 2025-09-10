@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Builder(toBuilder = true)
 public class Loan {
     private Long idLoan;
-    private Long identityDocument; // <-- CAMPO AÑADIDO
+    private Long identityDocument;
     private BigDecimal amount;
     private Long term;
     private String email;

@@ -42,7 +42,6 @@ public class SecurityConfig {
         grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
 
         ReactiveJwtAuthenticationConverter jwtAuthenticationConverter = new ReactiveJwtAuthenticationConverter();
-        // --- USANDO TU SOLUCIÓN PROBADA ---
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt ->
                 Flux.fromIterable(grantedAuthoritiesConverter.convert(jwt))
         );
@@ -56,7 +55,6 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        // --- REGLA ESPECÍFICA PARA SOLICITUDES ---
                         .pathMatchers(HttpMethod.POST, "/api/v1/solicitud").hasRole("CLIENTE")
                         .anyExchange().authenticated()
                 )

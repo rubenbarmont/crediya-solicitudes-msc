@@ -16,9 +16,9 @@ public interface LoanApiMapper {
     @Mapping(target = "idLoan", ignore = true)
     @Mapping(target = "idStatus", ignore = true)
     @Mapping(target = "email", ignore = true)
-    @Mapping(target = "identityDocument", source = "identityDocument") // Mapeo explícito
-    @Mapping(target = "amount", source = "amount")                   // Mapeo explícito
-    @Mapping(target = "term", source = "term")                       // Mapeo explícito
-    @Mapping(target = "idLoanType", source = "idLoanType")             // Mapeo explícito
+    @Mapping(target = "identityDocument", source = "identityDocument")
+    @Mapping(target = "amount", source = "amount")
+    @Mapping(target = "term", source = "term")
+    @Mapping(target = "idLoanType", source = "idLoanType")
     Loan toDomain(LoanRequestDTO dto);
 }

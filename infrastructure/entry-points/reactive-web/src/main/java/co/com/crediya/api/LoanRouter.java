@@ -34,7 +34,6 @@ public class LoanRouter {
                     summary = "Registrar una nueva solicitud de préstamo",
                     tags = {"Solicitudes de Préstamo"},
                     requestBody = @RequestBody(required = true, content = @Content(schema = @Schema(implementation = LoanRequestDTO.class))),
-                    // --- SECCIÓN DE RESPUESTAS MEJORADA Y DETALLADA ---
                     responses = {
                             @ApiResponse(
                                     responseCode = "201",

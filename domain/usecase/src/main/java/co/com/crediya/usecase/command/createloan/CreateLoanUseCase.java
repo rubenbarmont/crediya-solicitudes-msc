@@ -25,12 +25,9 @@ public class CreateLoanUseCase {
         return userGateway.findById(authenticatedUserId)
                 .switchIfEmpty(Mono.error(new UserNotFoundException("El usuario autenticado no fue encontrado en el sistema.")))
                 .flatMap(authenticatedUser -> {
-                    // VALIDACIÓN CLAVE: Compara el documento del token con el de la petición
                     if (!authenticatedUser.getIdentityDocument().equals(loan.getIdentityDocument())) {
                         return Mono.error(new LoanCreationForbiddenException());
                     }
-
-                    // Si la validación pasa, enriquecemos el préstamo con el email verificado
                     loan.setEmail(authenticatedUser.getEmail());
                     return Mono.just(loan);
                 })

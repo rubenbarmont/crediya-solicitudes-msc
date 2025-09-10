@@ -18,7 +18,7 @@ public class LoanEntity {
     @Column("id_loan")
     private Long idLoan;
 
-    @Column("identity_document") // Mapeo explícito a la columna de la BD
+    @Column("identity_document")
     private Long identityDocument;
 
     private BigDecimal amount;

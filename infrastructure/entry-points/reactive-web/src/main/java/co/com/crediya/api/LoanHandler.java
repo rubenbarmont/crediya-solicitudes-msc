@@ -85,8 +85,6 @@ public class LoanHandler {
                 .message(err.getMessage())
                 .path(request.path())
                 .build();
-        // Para InvalidLoanRequestDataException, el body puede ser una lista de errores
-        // Para los demás, será el mensaje del error.
         return ServerResponse.status(status)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(body instanceof String ? errorDto : body);
