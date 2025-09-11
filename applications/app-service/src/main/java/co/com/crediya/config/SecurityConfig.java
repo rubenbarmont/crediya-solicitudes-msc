@@ -28,8 +28,17 @@ public class SecurityConfig {
 
     private final JwtProperties jwtProperties;
 
+    // --- CAMBIO: Se añaden las rutas públicas para Swagger ---
+    private static final String[] SWAGGER_ROUTES = {
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/webjars/**"
+    };
+
     @Bean
     public ReactiveJwtDecoder reactiveJwtDecoder() {
+        // Corrección: Asumiendo que JwtProperties es un record, el método es .secret()
         byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.secret());
         SecretKey key = Keys.hmacShaKeyFor(keyBytes);
         return NimbusReactiveJwtDecoder.withSecretKey(key).build();
@@ -55,7 +64,13 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
+                        // --- CAMBIO: Se permite el acceso público a las rutas de Swagger ---
+                        .pathMatchers(SWAGGER_ROUTES).permitAll()
+
+                        // Tus reglas de negocio se mantienen
                         .pathMatchers(HttpMethod.POST, "/api/v1/solicitud").hasRole("CLIENTE")
+
+                        // Cualquier otra petición requiere autenticación
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

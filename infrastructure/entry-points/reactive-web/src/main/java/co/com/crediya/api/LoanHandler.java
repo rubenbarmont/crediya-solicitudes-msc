@@ -7,12 +7,12 @@ import co.com.crediya.model.loan.exceptions.InvalidLoanRequestDataException;
 import co.com.crediya.model.loan.exceptions.UserNotFoundException;
 import co.com.crediya.model.loantype.exceptions.LoanTypeNotFoundException;
 import co.com.crediya.usecase.command.createloan.CreateLoanUseCase;
+import co.com.crediya.usecase.security.AuthenticationGateway;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -20,11 +20,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import co.com.crediya.model.loan.Loan;
 import co.com.crediya.model.loan.exceptions.LoanCreationForbiddenException;
-import org.springframework.security.oauth2.jwt.Jwt;
-
-
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -33,28 +29,16 @@ public class LoanHandler {
     private final CreateLoanUseCase createLoanUseCase;
     private final LoanApiMapper loanApiMapper;
     private final TransactionalOperator transactionalOperator;
+    private final AuthenticationGateway authenticationGateway;
 
     public Mono<ServerResponse> createLoanRequest(ServerRequest serverRequest) {
         Mono<Loan> loanMono = serverRequest.bodyToMono(LoanRequestDTO.class)
                 .map(loanApiMapper::toDomain);
-
-        Mono<Long> authenticatedUserIdMono = ReactiveSecurityContextHolder.getContext()
-                .map(ctx -> ctx.getAuthentication().getPrincipal())
-                .flatMap(principal -> {
-                    if (principal instanceof Jwt jwt) {
-                        Map<String, Object> claims = jwt.getClaims();
-                        Object userIdClaim = claims.get("userId");
-                        if (userIdClaim instanceof Number) {
-                            return Mono.just(((Number) userIdClaim).longValue());
-                        }
-                    }
-                    return Mono.error(new IllegalStateException("No se pudo obtener un userId válido del token."));
-                })
-                .switchIfEmpty(Mono.error(new IllegalStateException("No se pudo obtener el userId del token")));
-
+        Mono<Long> authenticatedUserIdMono = authenticationGateway.getAuthenticatedUserId();
         return Mono.zip(loanMono, authenticatedUserIdMono)
                 .doOnNext(tuple -> log.info("Iniciando solicitud de préstamo para doc: {} por user_id: {}",
                         tuple.getT1().getIdentityDocument(), tuple.getT2()))
+                // 4. Llama al UseCase con ambos datos
                 .flatMap(tuple -> createLoanUseCase.execute(tuple.getT1(), tuple.getT2()))
                 .as(transactionalOperator::transactional)
                 .doOnSuccess(saved -> log.info("Solicitud #{} creada exitosamente.", saved.getIdLoan()))

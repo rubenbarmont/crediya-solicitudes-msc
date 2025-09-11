@@ -1,17 +1,17 @@
-/*
 package co.com.crediya.usecase.command.createloan;
 
 import co.com.crediya.model.loan.Loan;
+import co.com.crediya.model.loan.exceptions.LoanCreationForbiddenException;
 import co.com.crediya.model.loan.gateways.LoanRepository;
 import co.com.crediya.model.status.Status;
 import co.com.crediya.model.status.gateways.StatusRepository;
-import co.com.crediya.usecase.databuilder.LoanBuilder;
-import co.com.crediya.usecase.databuilder.StatusBuilder;
+import co.com.crediya.usecase.databuilder.LoanTestDataBuilder;
+import co.com.crediya.usecase.databuilder.UserTestDataBuilder;
+import co.com.crediya.usecase.gateways.UserGateway;
 import co.com.crediya.usecase.service.LoanValidator;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
@@ -20,7 +20,6 @@ import reactor.test.StepVerifier;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CreateLoanUseCaseTest {
@@ -31,77 +30,50 @@ class CreateLoanUseCaseTest {
     private LoanRepository loanRepository;
     @Mock
     private StatusRepository statusRepository;
+    @Mock
+    private UserGateway userGateway;
 
+    @InjectMocks
     private CreateLoanUseCase createLoanUseCase;
 
-    @BeforeEach
-    void setUp() {
-        createLoanUseCase = new CreateLoanUseCase(validator, loanRepository, statusRepository);
-    }
-
     @Test
-    @DisplayName("Debe crear una solicitud de préstamo exitosamente")
-    void shouldCreateLoanRequestSuccessfully() {
-        // Arrange (Organizar)
-        Loan request = new LoanBuilder().build();
-        Status initialStatus = new StatusBuilder().build();
+    void shouldCreateLoanSuccessfully() {
+        // Arrange
+        var loanToCreate = new LoanTestDataBuilder().withIdentityDocument(12345L).build();
+        var authenticatedUser = new UserTestDataBuilder().withIdentityDocument(12345L).build();
+        var savedLoan = new LoanTestDataBuilder().withIdentityDocument(12345L).build();
+        var pendingStatus = Status.builder().idStatus(1L).name("Pendiente de revisión").build();
+        var authenticatedUserId = 100L;
 
-        // Creamos una copia de la solicitud con el ID y el estado que esperamos después de guardar
-        Loan savedRequest = request.toBuilder()
-                .idLoan(99L)
-                .idStatus(initialStatus.getIdStatus())
-                .build();
+        when(userGateway.findById(authenticatedUserId)).thenReturn(Mono.just(authenticatedUser));
+        when(validator.validate(any(Loan.class))).thenReturn(Mono.just(loanToCreate));
+        when(statusRepository.findByName(anyString())).thenReturn(Mono.just(pendingStatus));
+        when(loanRepository.save(any(Loan.class))).thenReturn(Mono.just(savedLoan));
 
-        when(validator.validate(request)).thenReturn(Mono.just(request));
-        when(statusRepository.findByName("Pendiente de revisión")).thenReturn(Mono.just(initialStatus));
-        // any() asegura que el mock responda sin importar el estado que tenga el objeto al momento de guardar
-        when(loanRepository.save(any(Loan.class))).thenReturn(Mono.just(savedRequest));
+        // Act
+        Mono<Loan> result = createLoanUseCase.execute(loanToCreate, authenticatedUserId);
 
-        // Act (Actuar)
-        Mono<Loan> result = createLoanUseCase.execute(request);
-
-        // Assert (Afirmar)
+        // Assert
         StepVerifier.create(result)
-                .expectNextMatches(response ->
-                        response.getIdLoan().equals(99L) &&
-                                response.getIdStatus().equals(initialStatus.getIdStatus())
-                )
+                .expectNext(savedLoan)
                 .verifyComplete();
     }
 
     @Test
-    @DisplayName("Debe propagar el error si la validación falla")
-    void shouldPropagateErrorWhenValidationFails() {
+    void shouldFailWhenIdentityDocumentDoesNotMatch() {
         // Arrange
-        Loan request = new LoanBuilder().build();
-        RuntimeException validationError = new RuntimeException("Error de validación");
-        when(validator.validate(request)).thenReturn(Mono.error(validationError));
+        var loanToCreate = new LoanTestDataBuilder().withIdentityDocument(54321L).build(); // Documento diferente
+        var authenticatedUser = new UserTestDataBuilder().withIdentityDocument(12345L).build();
+        var authenticatedUserId = 100L;
+
+        when(userGateway.findById(authenticatedUserId)).thenReturn(Mono.just(authenticatedUser));
 
         // Act
-        Mono<Loan> result = createLoanUseCase.execute(request);
+        Mono<Loan> result = createLoanUseCase.execute(loanToCreate, authenticatedUserId);
 
         // Assert
         StepVerifier.create(result)
-                .expectErrorMatches(throwable -> throwable.getMessage().equals("Error de validación"))
+                .expectError(LoanCreationForbiddenException.class)
                 .verify();
     }
-
-    @Test
-    @DisplayName("Debe fallar si el estado inicial no se encuentra en la base de datos")
-    void shouldFailWhenInitialStatusIsNotFound() {
-        // Arrange
-        Loan request = new LoanBuilder().build();
-        when(validator.validate(request)).thenReturn(Mono.just(request));
-        when(statusRepository.findByName(anyString())).thenReturn(Mono.empty()); // Simula que no se encontró
-
-        // Act
-        Mono<Loan> result = createLoanUseCase.execute(request);
-
-        // Assert
-        StepVerifier.create(result)
-                .expectError(IllegalStateException.class)
-                .verify();
-    }
-
 }
-*/
