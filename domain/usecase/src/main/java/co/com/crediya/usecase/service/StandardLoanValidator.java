@@ -20,10 +20,8 @@ public class StandardLoanValidator implements LoanValidator {
 
     private final LoanTypeRepository loanTypeRepository;
 
-    // --- CONSTRUCTOR MODIFICADO ---
     public StandardLoanValidator(LoanTypeRepository loanTypeRepository) {
         this.loanTypeRepository = loanTypeRepository;
-        // this.userGateway = userGateway; // <-- ELIMINAR ESTA LÍNEA
     }
 
     @Override
@@ -62,14 +60,8 @@ public class StandardLoanValidator implements LoanValidator {
         if (loan.getIdLoanType() == null) {
             return Mono.error(new IllegalStateException("El id de tipo de préstamo es nulo."));
         }
-
-        // La validación del usuario ya no se hace aquí.
-        // Solo validamos que el tipo de préstamo exista.
         return loanTypeRepository.findById(loan.getIdLoanType())
                 .switchIfEmpty(Mono.error(new LoanTypeNotFoundException("El tipo de préstamo seleccionado no existe.")))
-                // Podríamos agregar más validaciones aquí, por ejemplo, que el monto esté dentro de los límites del tipo de préstamo.
-                // .filter(loanType -> isAmountValidForLoanType(loan.getAmount(), loanType))
-                // .switchIfEmpty(...)
                 .thenReturn(loan);
     }
 

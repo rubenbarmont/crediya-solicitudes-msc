@@ -16,5 +16,4 @@ public class LoanTypeReactiveRepositoryAdapter
     public LoanTypeReactiveRepositoryAdapter(LoanTypeReactiveRepository repository, ObjectMapper mapper) {
         super(repository, mapper, entity -> mapper.mapBuilder(entity, LoanType.LoanTypeBuilder.class).build());
     }
-    // El método findById() es heredado de la clase base ReactiveAdapterOperations
 }

@@ -12,5 +12,4 @@ public class UserResponseDTO {
     private Long identityDocument;
     private String email;
     private BigDecimal baseSalary;
-    // No necesitamos los otros campos como nombre, apellido, etc., por ahora.
 }

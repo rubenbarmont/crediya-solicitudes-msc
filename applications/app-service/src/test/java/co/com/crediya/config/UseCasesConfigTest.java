@@ -1,44 +1,79 @@
 package co.com.crediya.config;
 
+import co.com.crediya.model.loan.gateways.LoanRepository;
+import co.com.crediya.model.loantype.gateways.LoanTypeRepository;
+import co.com.crediya.model.status.gateways.StatusRepository;
+import co.com.crediya.usecase.command.createloan.CreateLoanUseCase;
+import co.com.crediya.usecase.gateways.UserGateway;
+import co.com.crediya.usecase.service.LoanValidator;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class UseCasesConfigTest {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+class UseCasesConfigTest {
+
+    private AnnotationConfigApplicationContext context;
+
+    @BeforeEach
+    void setUp() {
+        // Arrange: Creamos el contexto usando nuestra configuración de prueba
+        context = new AnnotationConfigApplicationContext(TestConfig.class);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // Limpiamos el contexto después de cada test
+        context.close();
+    }
 
     @Test
-    void testUseCaseBeansExist() {
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfig.class)) {
-            String[] beanNames = context.getBeanDefinitionNames();
-
-            boolean useCaseBeanFound = false;
-            for (String beanName : beanNames) {
-                if (beanName.endsWith("UseCase")) {
-                    useCaseBeanFound = true;
-                    break;
-                }
-            }
-
-            assertTrue(useCaseBeanFound, "No beans ending with 'Use Case' were found");
-        }
+    void shouldCreateCreateLoanUseCaseBean() {
+        // Act & Assert
+        CreateLoanUseCase useCase = context.getBean(CreateLoanUseCase.class);
+        assertNotNull(useCase, "El bean de CreateLoanUseCase no debería ser nulo.");
     }
 
+    @Test
+    void shouldCreateLoanValidatorBean() {
+        // Act & Assert
+        LoanValidator validator = context.getBean(LoanValidator.class);
+        assertNotNull(validator, "El bean de LoanValidator no debería ser nulo.");
+    }
+
+
+    // --- Nuestra Configuración de Prueba anidada ---
     @Configuration
-    @Import(UseCasesConfig.class)
+    @Import(UseCasesConfig.class) // Importamos la configuración real de la aplicación
     static class TestConfig {
 
-        @Bean
-        public MyUseCase myUseCase() {
-            return new MyUseCase();
-        }
-    }
+        // Creamos Mocks para TODAS las dependencias que los UseCases necesitan.
+        // Spring usará estos mocks para satisfacer las dependencias.
 
-    static class MyUseCase {
-        public String execute() {
-            return "MyUseCase Test";
+        @Bean
+        public LoanRepository loanRepository() {
+            return Mockito.mock(LoanRepository.class);
+        }
+
+        @Bean
+        public LoanTypeRepository loanTypeRepository() {
+            return Mockito.mock(LoanTypeRepository.class);
+        }
+
+        @Bean
+        public StatusRepository statusRepository() {
+            return Mockito.mock(StatusRepository.class);
+        }
+
+        @Bean
+        public UserGateway userGateway() {
+            return Mockito.mock(UserGateway.class);
         }
     }
 }

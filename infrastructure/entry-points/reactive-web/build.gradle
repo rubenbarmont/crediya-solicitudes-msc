@@ -9,6 +9,12 @@ dependencies {
 
     // --- AÑADIR ESTA LÍNEA ---
     implementation 'org.springframework:spring-tx' // Para TransactionalOperator
+    // --- AÑADE ESTA LÍNEA ---
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
+    // --- AÑADE ESTA LÍNEA ---
+    // Esta dependencia le da acceso a la clase Jwt y a todos sus métodos
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
